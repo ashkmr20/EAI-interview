@@ -26,7 +26,10 @@ for i in range(10):
 		phone_no=phone_no+i
 	for i in test_name:
 		name=name+i
-#name, phone aaaaa, 00000 and increase similarly
+#name, phone aaaaa, 00000
+
+
+# created a diff index for test data
 results = es_search.insert_doc(es, 'test-data', name, phone_no, address, i)
 
 #es.indices.delete(index='test-data', ignore=[400, 404])
