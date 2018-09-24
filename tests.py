@@ -39,7 +39,7 @@ class Test_contacts_api(unittest.TestCase):
 		results = es_search.insert_doc(es, 'test-data', "TEST", "12345", "AAA", 0)
 		self.assertEqual(results['result'], 'created')
 	def test_view_all(self):
-		results= ((es_search.paged_get(es, "test-data", 1, 1000)))
+		results= ((es_search.paged_get(es, "test-data", 1, 1000,"")))
 		self.assertEqual(results['hits']['total'], 10)
 	def test_update(self):
 		results=None

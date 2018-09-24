@@ -4,7 +4,7 @@ def single_get(es, index, name):
 	results = es.search(index= index, body={"query": {"match": {'name': name}}})
 	return ((results['hits']['hits']))
 
-def paged_get(es, index, page, page_size):
+def paged_get(es, index, page, page_size, querystr):
 	results = es.search(index=index, from_=(page-1)*10, size=page_size, body={'query' :{ 'match_all':{}}})
 	return results['hits']['hits']
 

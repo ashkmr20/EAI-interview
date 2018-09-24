@@ -74,7 +74,8 @@ def users_page():
 	if request.method == 'GET':
 		page= request.args.get('page', default = 1, type = int)
 		page_size= request.args.get('pageSize', default = 10, type = int)
-		return jsonify(es_search.paged_get(es, "address_book", page, page_size))
+		querystr= request.args.get('query', default = "", type = str)
+		return jsonify(es_search.paged_get(es, "address_book", page, page_size,querystr))
 
 	elif request.method == 'POST':
 		try:
