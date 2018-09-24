@@ -6,7 +6,7 @@ def single_get(es, index, name):
 
 def paged_get(es, index, page, page_size):
 	results = es.search(index=index, from_=(page-1)*10, size=page_size, body={'query' :{ 'match_all':{}}})
-	return results
+	return results['hits']['hits']
 
 def insert_doc(es, index, name, phone_no, address, ids):
 	body = {
@@ -14,7 +14,7 @@ def insert_doc(es, index, name, phone_no, address, ids):
 		'phone_no': phone_no,
 		'address': address
 	}
-	results = es.index(index=index, doc_type='contact', body=body)
+	results = es.index(index=index, doc_type='contact', body=body, id=ids)
 	return results
 def update_doc(es, index, name, phone_no, address):
 	results=-1

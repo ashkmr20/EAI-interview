@@ -38,6 +38,13 @@ class Test_contacts_api(unittest.TestCase):
 	def test_view_all(self):
 		results= ((es_search.paged_get(es, "test-data", 1, 1000)))
 		self.assertEqual(results['hits']['total'], 10)
+	def test_update(self):
+		results=None
+		try:
+			results = es_search.update_doc(es, 'test-data', "aaaaaaaaab", "55555", "New place")
+		except:
+			pass
+		self.assertEqual(results['result'],'updated')	
 	def test_update_absent_name(self):
 		results=None
 		try:
