@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
 from elasticsearch import Elasticsearch
+import es_search as es_search
 
 host= input("Elasticsearch Host: ")
 port= input("Elasticsearch Port: ")
@@ -17,6 +18,7 @@ class data_stats:
 	def __init__(self):
 		self.i=0
 es_data = data_stats()
+#es.indices.delete(index='address_book', ignore=[400, 404])
 
 # Custom error for invalid delete/update user
 class InvalidUsage(Exception):
@@ -43,13 +45,11 @@ def handle_invalid_usage(error):
 @app.route('/contact/<name>', methods=['GET', 'POST','DELETE','PUT'])
 def user(name):
 	if request.method == 'GET' and name:
-		results = es.search(index="address_book", body={"query": {"match": {'name': name}}})
-		return (jsonify(results['hits']['hits']))#[0]['_source']))
-
+		return jsonify(es_search.single_get(es,'address_book', name))
 
 	elif request.method== "DELETE" and name:
-		results = es.delete_by_query(index='address_book',doc_type='address', body={"query": {"match": {'name': name}}})
-		if results['deleted']==0:
+		results = es_search.delete_doc(es, 'address_book',name)
+		if results==-1:
 			raise InvalidUsage("Error: User to be deleted can't be found.", status_code=400)
 		return jsonify(results)
 	elif request.method=="PUT" and name:
@@ -57,30 +57,25 @@ def user(name):
 			new_phone_no = request.form['phone_no']
 		except:
 			new_phone_no=""
-		body = {
-			'script':
-				{
-					"source": "ctx._source.phone_no ='%s'"% new_phone_no,
-				},
-			'query': 
-				{
-					'match': 
-						{'name': name}
-				}
-		}
-		results = es.update_by_query(index='address_book',doc_type='address', body=body)
-		if results['updated']==0:
+		try:
+			new_address = request.form['new_address']
+		except:
+			new_address=""			
+		results = es_search.update_doc(es, 'address_book', name, new_phone_no, new_address)
+		if results==-1:
 			raise InvalidUsage("Error: User to be updated can't be found.", status_code=400)
+		if results==-2:
+			raise InvalidUsage("Error: Neither field was updated", status_code=390)			
 		return jsonify(results)
 
-# route for page GET and POST
+# route for paged GET and single POST
 @app.route('/contact', methods=['GET', 'POST'])
 def users_page():
 	if request.method == 'GET':
 		page= request.args.get('page', default = 1, type = int)
 		page_size= request.args.get('pageSize', default = 10, type = int)
-		results = es.search(index="address_book", from_=(page-1)*10, size=page_size, body={'query' :{ 'match_all':{}}})
-		return jsonify(results)
+		return jsonify(es_search.paged_get(es, "address_book", page, page_size))
+
 	elif request.method == 'POST':
 		try:
 			name = request.form['name']
@@ -90,11 +85,11 @@ def users_page():
 			phone_no = request.form['phone_no']
 		except:
 			phone_no=""
-		body = {
-			'name': name,
-			'phone_no': phone_no,
-		}
-		result = es.index(index='address_book', doc_type='address', id=es_data.i, body=body)
+		try:
+			address = request.form['address']
+		except:
+			address=""
+		result = es_search.insert_doc(es, 'address_book', name, phone_no, address, es_data.i)
 		es_data.i+=1
 		return jsonify(result)
 
