@@ -1,8 +1,11 @@
 # EAI-interview
 
 Run with python3.
+
 main.py = Flask app code
+
 es_search.py = ES backend code
+
 tests.py = Unittest code
 
 Assumptions:
